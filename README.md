@@ -1,14 +1,11 @@
 # Scientific Training Load Analysis Website
 
-**Members** [@KyleHung7](https://github.com/KyleHung7)
-[https://youtu.be/v52GLI_23dg](https://youtu.be/v52GLI_23dg)
+**Members** [@KyleHung7](https://github.com/KyleHung7) [@samko5sam](https://github.com/samko5sam) 
+**Final Project Proposal Video** [https://youtu.be/v52GLI_23dg](https://youtu.be/v52GLI_23dg)
 
 
 ## Project Introduction
 This project presents a streamlined and science-based **training load analysis website**, designed for athletes, fitness enthusiasts, and beginners. It provides professional, user-friendly tools for analyzing training impulses and making data-driven decisions to avoid overtraining and optimize performance.
-
-## Workflow
-![image](https://github.com/user-attachments/assets/42066ec1-50ed-46c3-b759-cc78d9f5ff12)
 
 ### **Problems Addressed**
 1. **Overtraining and insufficient recovery**  
@@ -30,6 +27,9 @@ This project presents a streamlined and science-based **training load analysis w
 - **Personalized suggestions and risk alerts** based on data.
 - **Interactive visual dashboards** for better understanding.
 - **Report export functionality** for personalized recommendations.
+
+## Workflow
+![image](https://github.com/user-attachments/assets/42066ec1-50ed-46c3-b759-cc78d9f5ff12)
 
 ---
 
