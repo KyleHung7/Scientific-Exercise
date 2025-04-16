@@ -1,6 +1,7 @@
 # Scientific Training Load Analysis Website
 
-**Members** [@KyleHung7](https://github.com/KyleHung7) [@samko5sam](https://github.com/samko5sam) 
+**Members** [@KyleHung7](https://github.com/KyleHung7) [@samko5sam](https://github.com/samko5sam) [@leokao960811](https://github.com/leokao960811) 
+
 **Final Project Proposal Video** [https://youtu.be/v52GLI_23dg](https://youtu.be/v52GLI_23dg)
 
 
