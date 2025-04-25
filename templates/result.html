@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析結果</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 900px;
+            padding: 30px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        .table {
+            color: #333;
+        }
+        .btn-primary {
+            background: #ff6b6b;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            background: #ff8787;
+        }
+        h1, h3 {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .alert {
+            background: #e6f3ff;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">訓練分析報告</h1>
+        <div class="card p-4">
+            <h3>項目分析</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>類別</th>
+                        <th>動作</th>
+                        <th>訓練量</th>
+                        <th>RPE</th>
+                        <th>建議</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.action }}</td>
+                        <td>
+                            {% if item.type == '有氧運動' %}
+                            {{ item.minutes }} 分鐘
+                            {% else %}
+                            {{ item.sets }} 組
+                            {% endif %}
+                        </td>
+                        <td>{{ item.rpe }}</td>
+                        <td>{{ item.suggestion }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card p-4">
+            <h3>訓練指標分析</h3>
+            <div class="alert" role="alert">
+                <p><strong>總結建議：</strong> {{ metrics.analysis }}</p>
+            </div>
+            <ul>
+                <li><strong>週間訓練量變化 (WWS):</strong> {{ metrics.weekly_workout_summary }} - 高於10表示肌力進步顯著，低於5建議增加訓練量</li>
+                <li><strong>運動訓練量 (TL):</strong> {{ metrics.training_load }} - 應逐週提升，代表訓練效果累積</li>
+                <li><strong>訓練同質性 (TM):</strong> {{ metrics.training_monotony }} - 0.5以下表示課表穩定，高於1.0建議增加變化</li>
+                <li><strong>訓練張力值 (TS):</strong> {{ metrics.training_strain }} - 高於100需注意過度訓練，低於50可提升訓練量</li>
+            </ul>
+        </div>
+        <div class="text-center">
+            <a href="/" class="btn btn-primary">回到首頁</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
