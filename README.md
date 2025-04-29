@@ -4,6 +4,8 @@
 
 **Final Project Proposal Video** [https://youtu.be/v52GLI_23dg](https://youtu.be/v52GLI_23dg)
 
+**Final Project Progress Report Video** [https://youtu.be/-LkDwBUUt44](https://youtu.be/-LkDwBUUt44)
+
 
 ## Project Introduction
 This project presents a streamlined and science-based **training load analysis website**, designed for athletes, fitness enthusiasts, and beginners. It provides professional, user-friendly tools for analyzing training impulses and making data-driven decisions to avoid overtraining and optimize performance.
