@@ -68,7 +68,7 @@ def index():
     if request.method == 'POST':
         data = request.form
         items = []
-        item_count = int(data.get('item_count', 3))
+        item_count = int(data.get('item_count', 0))
         
         for i in range(1, item_count + 1):
             name = data.get(f'name{i}')

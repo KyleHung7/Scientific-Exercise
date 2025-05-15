@@ -20,6 +20,7 @@
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
+            position: relative; /* For positioning the delete button */
         }
         .form-control, .form-select {
             border-radius: 10px;
@@ -38,6 +39,11 @@
         }
         .btn-success {
             border-radius: 10px;
+        }
+        .delete-item-btn {
+            position: absolute;
+            top: 15px; /* Adjust as needed */
+            right: 15px; /* Adjust as needed */
         }
         h1 {
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
@@ -59,13 +65,14 @@
             <div id="items">
                 {% for i in range(1, item_count + 1) %}
                 <div class="card p-4 mb-3">
+                    <button type="button" class="btn btn-danger btn-sm delete-item-btn">刪除</button>
                     <h3>項目 {{ i }}</h3>
                     <div class="mb-3">
                         <label class="form-label">運動類別</label>
                         <select name="name{{ i }}" class="form-select exercise-type" data-index="{{ i }}">
                             <option value="">選擇類別</option>
-                            {% for type in exercises.keys() %}
-                            <option value="{{ type }}">{{ type }}</option>
+                            {% for type_name in exercises.keys() %} {# Changed 'type' to 'type_name' to avoid conflict with built-in 'type' #}
+                            <option value="{{ type_name }}">{{ type_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -80,14 +87,14 @@
                     <div class="mb-3">
                         <label class="form-label">訓練量</label>
                         <input type="number" name="sets{{ i }}" class="form-control sets-input" placeholder="無氧：輸入組數" min="0">
-                        <input type="number" name="minutes{{ i }}" class="form-control mt-2 minutes-input" placeholder="有氧：輸入分鐘數" min="0">
+                        <input type="number" name="minutes{{ i }}" class="form-control mt-2 minutes-input" placeholder="有氧：輸入分鐘數" min="0" style="display: none;">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">主觀用力程度 (RPE)</label>
                         <select name="rpe{{ i }}" class="form-select">
                             <option value="">選擇 RPE</option>
-                            {% for rpe in range(1, 11) %}
-                            <option value="{{ rpe }}">{{ rpe }}</option>
+                            {% for rpe_val in range(1, 11) %} {# Changed 'rpe' to 'rpe_val' #}
+                            <option value="{{ rpe_val }}">{{ rpe_val }}</option>
                             {% endfor %}
                         </select>
                         <small class="form-text text-muted">
@@ -115,93 +122,130 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        /* eslint-disable no-unused-vars */
         let exerciseData = {};
-        // Initialize exerciseData from the JSON script tag
         try {
             const rawData = document.getElementById('exercise-data').textContent;
             exerciseData = JSON.parse(rawData);
-            console.log('exerciseData loaded:', exerciseData);
         } catch (e) {
             console.error('Error parsing exerciseData:', e);
-            exerciseData = {};
+            exerciseData = {}; // Fallback
         }
 
-        // Add event listeners to all exercise-type selects on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.exercise-type').forEach(select => {
-                select.addEventListener('change', (event) => {
-                    const index = event.target.getAttribute('data-index');
-                    updateActions(event.target, index);
-                });
-            });
-        });
+        const itemsContainer = document.getElementById('items');
 
-        function updateActions(select, index) {
-            const actionSelect = document.getElementById(`action${index}`);
-            const customInput = document.querySelector(`input[name="custom_action${index}"]`);
-            const type = select.value;
+        function updateActions(selectElement, itemIndex) {
+            const actionSelect = document.getElementById(`action${itemIndex}`);
+            const customInput = document.querySelector(`input[name="custom_action${itemIndex}"]`);
+            const selectedType = selectElement.value;
 
+            if (!actionSelect || !customInput) {
+                console.error(`Could not find action elements for index ${itemIndex}`);
+                return;
+            }
+            
             actionSelect.innerHTML = '<option value="">選擇動作</option><option value="其他">其他（請自行輸入）</option>';
 
-            if (type && exerciseData[type] && Array.isArray(exerciseData[type])) {
-                exerciseData[type].forEach(action => {
+            if (selectedType && exerciseData[selectedType] && Array.isArray(exerciseData[selectedType])) {
+                exerciseData[selectedType].forEach(action => {
                     const option = document.createElement('option');
                     option.value = action;
                     option.textContent = action;
                     actionSelect.appendChild(option);
                 });
-            } else {
-                console.warn(`No actions found for type: ${type}`);
             }
 
             actionSelect.onchange = () => {
                 customInput.style.display = actionSelect.value === '其他' ? 'block' : 'none';
+                if (actionSelect.value !== '其他') {
+                    customInput.value = ''; // Clear custom input if not '其他'
+                }
             };
+            // Trigger onchange once to set initial state for custom input if '其他' is pre-selected
+            if (actionSelect.value === '其他') {
+                 customInput.style.display = 'block';
+            } else {
+                 customInput.style.display = 'none';
+            }
 
-            const isAerobic = type === '有氧運動';
-            document.querySelector(`input[name="sets${index}"]`).style.display = isAerobic ? 'none' : 'block';
-            document.querySelector(`input[name="minutes${index}"]`).style.display = isAerobic ? 'block' : 'none';
+
+            const isAerobic = selectedType === '有氧運動';
+            const setsInput = document.querySelector(`input[name="sets${itemIndex}"]`);
+            const minutesInput = document.querySelector(`input[name="minutes${itemIndex}"]`);
+
+            if (setsInput) {
+                setsInput.style.display = isAerobic ? 'none' : 'block';
+                if (isAerobic) setsInput.value = ''; // Clear sets if aerobic
+            }
+            if (minutesInput) {
+                minutesInput.style.display = isAerobic ? 'block' : 'none';
+                if (!isAerobic) minutesInput.value = ''; // Clear minutes if not aerobic
+            }
+        }
+        
+        function renumberItems() {
+            const itemCards = itemsContainer.querySelectorAll('.card');
+            const itemCountInput = document.getElementById('item_count');
+            
+            itemCards.forEach((card, index) => {
+                const newIndex = index + 1;
+
+                // Update heading
+                const heading = card.querySelector('h3');
+                if (heading) {
+                    heading.textContent = `項目 ${newIndex}`;
+                }
+
+                // Update form elements: name, id, data-index
+                card.querySelectorAll('[name], [id], .exercise-type').forEach(el => {
+                    if (el.name) {
+                        el.name = el.name.replace(/\d+$/, '') + newIndex;
+                    }
+                    if (el.id && el.id.match(/\d+$/)) { // Only update IDs that end with a number
+                        el.id = el.id.replace(/\d+$/, '') + newIndex;
+                    }
+                    if (el.classList.contains('exercise-type')) {
+                        el.setAttribute('data-index', newIndex);
+                    }
+                });
+            });
+            itemCountInput.value = itemCards.length;
         }
 
         function addItem() {
-            const itemCount = parseInt(document.getElementById('item_count').value) + 1;
-            document.getElementById('item_count').value = itemCount;
+            const existingItems = itemsContainer.querySelectorAll('.card');
+            const newItemIndex = existingItems.length + 1;
+            document.getElementById('item_count').value = newItemIndex;
 
             const itemDiv = document.createElement('div');
             itemDiv.className = 'card p-4 mb-3';
             itemDiv.innerHTML = `
-                <h3>項目 ${itemCount}</h3>
+                <button type="button" class="btn btn-danger btn-sm delete-item-btn">刪除</button>
+                <h3>項目 ${newItemIndex}</h3>
                 <div class="mb-3">
                     <label class="form-label">運動類別</label>
-                    <select name="name${itemCount}" class="form-select exercise-type" data-index="${itemCount}">
+                    <select name="name${newItemIndex}" class="form-select exercise-type" data-index="${newItemIndex}">
                         <option value="">選擇類別</option>
-                        ${Object.keys(exerciseData).map(type => {
-                            return `<option value="${type}">${type}</option>`;
-                        }).join('')}
+                        ${Object.keys(exerciseData).map(type => `<option value="${type}">${type}</option>`).join('')}
                     </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">動作</label>
-                    <select name="action${itemCount}" id="action${itemCount}" class="form-select">
+                    <select name="action${newItemIndex}" id="action${newItemIndex}" class="form-select">
                         <option value="">選擇動作</option>
                         <option value="其他">其他（請自行輸入）</option>
                     </select>
-                    <input type="text" name="custom_action${itemCount}" class="form-control mt-2" placeholder="輸入自訂動作（若選擇其他）" style="display: none;">
+                    <input type="text" name="custom_action${newItemIndex}" class="form-control mt-2" placeholder="輸入自訂動作（若選擇其他）" style="display: none;">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">訓練量</label>
-                    <input type="number" name="sets${itemCount}" class="form-control sets-input" placeholder="無氧：輸入組數" min="0">
-                    <input type="number" name="minutes${itemCount}" class="form-control mt-2 minutes-input" placeholder="有氧：輸入分鐘數" min="0">
+                    <input type="number" name="sets${newItemIndex}" class="form-control sets-input" placeholder="無氧：輸入組數" min="0">
+                    <input type="number" name="minutes${newItemIndex}" class="form-control mt-2 minutes-input" placeholder="有氧：輸入分鐘數" min="0" style="display: none;">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">主觀用力程度 (RPE)</label>
-                    <select name="rpe${itemCount}" class="form-select">
+                    <select name="rpe${newItemIndex}" class="form-select">
                         <option value="">選擇 RPE</option>
-                        ${Array.from({length: 10}, (_, i) => {
-                            const value = i + 1;
-                            return `<option value="${value}">${value}</option>`;
-                        }).join('')}
+                        ${Array.from({length: 10}, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
                     </select>
                     <small class="form-text text-muted">
                         RPE 1-2: 非常輕鬆，可輕鬆對話<br>
@@ -212,16 +256,40 @@
                     </small>
                 </div>
             `;
-            document.getElementById('items').appendChild(itemDiv);
-
-            // Add event listener to the newly added select
+            itemsContainer.appendChild(itemDiv);
+            // Initialize the new item's fields (especially sets/minutes visibility)
             const newSelect = itemDiv.querySelector('.exercise-type');
-            newSelect.addEventListener('change', (event) => {
-                const index = event.target.getAttribute('data-index');
-                updateActions(event.target, index);
-            });
+            updateActions(newSelect, newItemIndex); 
         }
-        /* eslint-enable no-unused-vars */
+
+        // Event delegation for dynamic elements (exercise type changes and delete buttons)
+        itemsContainer.addEventListener('change', function(event) {
+            if (event.target.classList.contains('exercise-type')) {
+                const itemIndex = event.target.getAttribute('data-index');
+                updateActions(event.target, itemIndex);
+            }
+        });
+
+        itemsContainer.addEventListener('click', function(event) {
+            if (event.target.classList.contains('delete-item-btn')) {
+                const itemCard = event.target.closest('.card');
+                if (itemCard) {
+                    itemCard.remove();
+                    renumberItems();
+                }
+            }
+        });
+        
+        // Initial setup for pre-rendered items
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.exercise-type').forEach(select => {
+                const index = select.getAttribute('data-index');
+                updateActions(select, index); // This will also set initial field visibility
+            });
+            // Set initial item count based on rendered cards, in case it differs from Flask's {{ item_count }}
+            // Though generally they should match on initial load.
+             document.getElementById('item_count').value = itemsContainer.querySelectorAll('.card').length;
+        });
     </script>
 </body>
 </html>
