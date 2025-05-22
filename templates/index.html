@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>運動衝量分析</title>
+    <title>運動訓練分析</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: #fff;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Arial', '微軟正黑體', 'Microsoft JhengHei', sans-serif;
         }
         .container {
             max-width: 900px;
@@ -21,6 +21,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
             position: relative; /* For positioning the delete button */
+            color: #333;
         }
         .form-control, .form-select {
             border-radius: 10px;
@@ -42,15 +43,31 @@
         }
         .delete-item-btn {
             position: absolute;
-            top: 15px; /* Adjust as needed */
-            right: 15px; /* Adjust as needed */
+            top: 15px; 
+            right: 15px; 
         }
         h1 {
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: #fff;
+        }
+        .card h3 {
+            color: #1e3c72;
+            text-shadow: none;
         }
         .error {
-            color: #ff6b6b;
+            color: #ffcdd2; /* Lighter red for better visibility on dark bg */
+            background-color: rgba(255, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ff6b6b;
             font-weight: bold;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .non-aerobic-fields {
+            /* Will be controlled by JS */
         }
     </style>
 </head>
@@ -58,7 +75,7 @@
     <div class="container">
         <h1 class="text-center mb-4">訓練分析表單</h1>
         {% if error %}
-        <p class="error text-center">{{ error }}</p>
+        <div class="alert alert-danger text-center" role="alert">{{ error }}</div>
         {% endif %}
         <form method="POST">
             <input type="hidden" name="item_count" id="item_count" value="{{ item_count }}">
@@ -67,43 +84,61 @@
                 <div class="card p-4 mb-3">
                     <button type="button" class="btn btn-danger btn-sm delete-item-btn">刪除</button>
                     <h3>項目 {{ i }}</h3>
-                    <div class="mb-3">
-                        <label class="form-label">運動類別</label>
-                        <select name="name{{ i }}" class="form-select exercise-type" data-index="{{ i }}">
-                            <option value="">選擇類別</option>
-                            {% for type_name in exercises.keys() %} {# Changed 'type' to 'type_name' to avoid conflict with built-in 'type' #}
-                            <option value="{{ type_name }}">{{ type_name }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">運動類別</label>
+                            <select name="name{{ i }}" class="form-select exercise-type" data-index="{{ i }}">
+                                <option value="">選擇類別</option>
+                                {% for type_name in exercises.keys() %}
+                                <option value="{{ type_name }}">{{ type_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">動作</label>
+                            <select name="action{{ i }}" id="action{{ i }}" class="form-select">
+                                <option value="">選擇動作</option>
+                                <option value="其他">其他（請自行輸入）</option>
+                            </select>
+                            <input type="text" name="custom_action{{ i }}" id="custom_action{{i}}" class="form-control mt-2" placeholder="輸入自訂動作（若選擇其他）" style="display: none;">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">動作</label>
-                        <select name="action{{ i }}" id="action{{ i }}" class="form-select">
-                            <option value="">選擇動作</option>
-                            <option value="其他">其他（請自行輸入）</option>
-                        </select>
-                        <input type="text" name="custom_action{{ i }}" class="form-control mt-2" placeholder="輸入自訂動作（若選擇其他）" style="display: none;">
+
+                    <div class="non-aerobic-fields" id="non_aerobic_fields{{i}}">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">組數</label>
+                                <input type="number" name="sets{{ i }}" id="sets{{i}}" class="form-control" placeholder="例: 3" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">每組次數</label>
+                                <input type="number" name="reps{{ i }}" id="reps{{i}}" class="form-control" placeholder="例: 10" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">重量</label>
+                                <input type="text" name="weight{{ i }}" id="weight{{i}}" class="form-control" placeholder="例: 10kg, BW">
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">訓練量</label>
-                        <input type="number" name="sets{{ i }}" class="form-control sets-input" placeholder="無氧：輸入組數" min="0">
-                        <input type="number" name="minutes{{ i }}" class="form-control mt-2 minutes-input" placeholder="有氧：輸入分鐘數" min="0" style="display: none;">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">主觀用力程度 (RPE)</label>
-                        <select name="rpe{{ i }}" class="form-select">
-                            <option value="">選擇 RPE</option>
-                            {% for rpe_val in range(1, 11) %} {# Changed 'rpe' to 'rpe_val' #}
-                            <option value="{{ rpe_val }}">{{ rpe_val }}</option>
-                            {% endfor %}
-                        </select>
-                        <small class="form-text text-muted">
-                            RPE 1-2: 非常輕鬆，可輕鬆對話<br>
-                            RPE 3-4: 稍有感覺，仍可輕鬆交談<br>
-                            RPE 5-6: 中等強度，說話稍有困難<br>
-                            RPE 7-8: 高強度，說話很吃力<br>
-                            RPE 9-10: 極限，無法說話
-                        </small>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">總時長 (分鐘)</label>
+                            <input type="number" name="minutes{{ i }}" id="minutes{{i}}" class="form-control" placeholder="該項運動總耗時" min="0" step="0.1">
+                             <small class="form-text text-muted">不包含組間休息的總運動時間</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">主觀用力程度 (RPE)</label>
+                            <select name="rpe{{ i }}" id="rpe{{i}}" class="form-select">
+                                <option value="">選擇 RPE</option>
+                                {% for rpe_val in range(1, 11) %}
+                                <option value="{{ rpe_val }}">{{ rpe_val }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted mt-1 d-block">
+                                1-2:極輕鬆 / 3-4:稍費力 / 5-6:中等 / 7-8:費力 / 9-10:極限
+                            </small>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -116,7 +151,6 @@
             </div>
         </form>
     </div>
-    <!-- Store exerciseData as JSON in a script tag -->
     <script type="application/json" id="exercise-data">
         {{ exercises | tojson | safe }}
     </script>
@@ -128,18 +162,18 @@
             exerciseData = JSON.parse(rawData);
         } catch (e) {
             console.error('Error parsing exerciseData:', e);
-            exerciseData = {}; // Fallback
+            exerciseData = {}; 
         }
 
         const itemsContainer = document.getElementById('items');
 
-        function updateActions(selectElement, itemIndex) {
+        function updateDynamicFields(selectElement, itemIndex) {
             const actionSelect = document.getElementById(`action${itemIndex}`);
-            const customInput = document.querySelector(`input[name="custom_action${itemIndex}"]`);
+            const customInput = document.getElementById(`custom_action${itemIndex}`);
             const selectedType = selectElement.value;
 
             if (!actionSelect || !customInput) {
-                console.error(`Could not find action elements for index ${itemIndex}`);
+                console.error(`Could not find action/custom_action elements for index ${itemIndex}`);
                 return;
             }
             
@@ -157,28 +191,23 @@
             actionSelect.onchange = () => {
                 customInput.style.display = actionSelect.value === '其他' ? 'block' : 'none';
                 if (actionSelect.value !== '其他') {
-                    customInput.value = ''; // Clear custom input if not '其他'
+                    customInput.value = '';
                 }
             };
-            // Trigger onchange once to set initial state for custom input if '其他' is pre-selected
-            if (actionSelect.value === '其他') {
-                 customInput.style.display = 'block';
-            } else {
-                 customInput.style.display = 'none';
-            }
+            customInput.style.display = actionSelect.value === '其他' ? 'block' : 'none';
 
 
             const isAerobic = selectedType === '有氧運動';
-            const setsInput = document.querySelector(`input[name="sets${itemIndex}"]`);
-            const minutesInput = document.querySelector(`input[name="minutes${itemIndex}"]`);
-
-            if (setsInput) {
-                setsInput.style.display = isAerobic ? 'none' : 'block';
-                if (isAerobic) setsInput.value = ''; // Clear sets if aerobic
-            }
-            if (minutesInput) {
-                minutesInput.style.display = isAerobic ? 'block' : 'none';
-                if (!isAerobic) minutesInput.value = ''; // Clear minutes if not aerobic
+            const nonAerobicFields = document.getElementById(`non_aerobic_fields${itemIndex}`);
+            
+            if (nonAerobicFields) {
+                nonAerobicFields.style.display = isAerobic ? 'none' : 'block';
+                if (isAerobic) {
+                    // Clear non-aerobic fields if type is changed to aerobic
+                    document.getElementById(`sets${itemIndex}`).value = '';
+                    document.getElementById(`reps${itemIndex}`).value = '';
+                    document.getElementById(`weight${itemIndex}`).value = '';
+                }
             }
         }
         
@@ -188,25 +217,14 @@
             
             itemCards.forEach((card, index) => {
                 const newIndex = index + 1;
+                card.querySelector('h3').textContent = `項目 ${newIndex}`;
 
-                // Update heading
-                const heading = card.querySelector('h3');
-                if (heading) {
-                    heading.textContent = `項目 ${newIndex}`;
-                }
-
-                // Update form elements: name, id, data-index
-                card.querySelectorAll('[name], [id], .exercise-type').forEach(el => {
-                    if (el.name) {
-                        el.name = el.name.replace(/\d+$/, '') + newIndex;
-                    }
-                    if (el.id && el.id.match(/\d+$/)) { // Only update IDs that end with a number
-                        el.id = el.id.replace(/\d+$/, '') + newIndex;
-                    }
-                    if (el.classList.contains('exercise-type')) {
-                        el.setAttribute('data-index', newIndex);
-                    }
+                card.querySelectorAll('[name],[id]').forEach(el => {
+                    if (el.name) el.name = el.name.replace(/\d+$/, '') + newIndex;
+                    if (el.id && el.id.match(/\d+$/)) el.id = el.id.replace(/\d+$/, '') + newIndex;
                 });
+                const exerciseTypeSelect = card.querySelector('.exercise-type');
+                if (exerciseTypeSelect) exerciseTypeSelect.setAttribute('data-index', newIndex);
             });
             itemCountInput.value = itemCards.length;
         }
@@ -221,74 +239,84 @@
             itemDiv.innerHTML = `
                 <button type="button" class="btn btn-danger btn-sm delete-item-btn">刪除</button>
                 <h3>項目 ${newItemIndex}</h3>
-                <div class="mb-3">
-                    <label class="form-label">運動類別</label>
-                    <select name="name${newItemIndex}" class="form-select exercise-type" data-index="${newItemIndex}">
-                        <option value="">選擇類別</option>
-                        ${Object.keys(exerciseData).map(type => `<option value="${type}">${type}</option>`).join('')}
-                    </select>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">運動類別</label>
+                        <select name="name${newItemIndex}" class="form-select exercise-type" data-index="${newItemIndex}">
+                            <option value="">選擇類別</option>
+                            ${Object.keys(exerciseData).map(type => `<option value="${type}">${type}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">動作</label>
+                        <select name="action${newItemIndex}" id="action${newItemIndex}" class="form-select">
+                            <option value="">選擇動作</option>
+                            <option value="其他">其他（請自行輸入）</option>
+                        </select>
+                        <input type="text" name="custom_action${newItemIndex}" id="custom_action${newItemIndex}" class="form-control mt-2" placeholder="輸入自訂動作（若選擇其他）" style="display: none;">
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">動作</label>
-                    <select name="action${newItemIndex}" id="action${newItemIndex}" class="form-select">
-                        <option value="">選擇動作</option>
-                        <option value="其他">其他（請自行輸入）</option>
-                    </select>
-                    <input type="text" name="custom_action${newItemIndex}" class="form-control mt-2" placeholder="輸入自訂動作（若選擇其他）" style="display: none;">
+
+                <div class="non-aerobic-fields" id="non_aerobic_fields${newItemIndex}">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">組數</label>
+                            <input type="number" name="sets${newItemIndex}" id="sets${newItemIndex}" class="form-control" placeholder="例: 3" min="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">每組次數</label>
+                            <input type="number" name="reps${newItemIndex}" id="reps${newItemIndex}" class="form-control" placeholder="例: 10" min="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">重量</label>
+                            <input type="text" name="weight${newItemIndex}" id="weight${newItemIndex}" class="form-control" placeholder="例: 10kg, BW">
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">訓練量</label>
-                    <input type="number" name="sets${newItemIndex}" class="form-control sets-input" placeholder="無氧：輸入組數" min="0">
-                    <input type="number" name="minutes${newItemIndex}" class="form-control mt-2 minutes-input" placeholder="有氧：輸入分鐘數" min="0" style="display: none;">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">主觀用力程度 (RPE)</label>
-                    <select name="rpe${newItemIndex}" class="form-select">
-                        <option value="">選擇 RPE</option>
-                        ${Array.from({length: 10}, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
-                    </select>
-                    <small class="form-text text-muted">
-                        RPE 1-2: 非常輕鬆，可輕鬆對話<br>
-                        RPE 3-4: 稍有感覺，仍可輕鬆交談<br>
-                        RPE 5-6: 中等強度，說話稍有困難<br>
-                        RPE 7-8: 高強度，說話很吃力<br>
-                        RPE 9-10: 極限，無法說話
-                    </small>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">總時長 (分鐘)</label>
+                        <input type="number" name="minutes${newItemIndex}" id="minutes${newItemIndex}" class="form-control" placeholder="該項運動總耗時" min="0" step="0.1">
+                        <small class="form-text text-muted">不包含組間休息的總運動時間</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">主觀用力程度 (RPE)</label>
+                        <select name="rpe${newItemIndex}" id="rpe${newItemIndex}" class="form-select">
+                            <option value="">選擇 RPE</option>
+                            ${Array.from({length: 10}, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
+                        </select>
+                         <small class="form-text text-muted mt-1 d-block">
+                            1-2:極輕鬆 / 3-4:稍費力 / 5-6:中等 / 7-8:費力 / 9-10:極限
+                        </small>
+                    </div>
                 </div>
             `;
             itemsContainer.appendChild(itemDiv);
-            // Initialize the new item's fields (especially sets/minutes visibility)
             const newSelect = itemDiv.querySelector('.exercise-type');
-            updateActions(newSelect, newItemIndex); 
+            updateDynamicFields(newSelect, newItemIndex); 
         }
 
-        // Event delegation for dynamic elements (exercise type changes and delete buttons)
         itemsContainer.addEventListener('change', function(event) {
             if (event.target.classList.contains('exercise-type')) {
                 const itemIndex = event.target.getAttribute('data-index');
-                updateActions(event.target, itemIndex);
+                updateDynamicFields(event.target, itemIndex);
             }
         });
 
         itemsContainer.addEventListener('click', function(event) {
             if (event.target.classList.contains('delete-item-btn')) {
-                const itemCard = event.target.closest('.card');
-                if (itemCard) {
-                    itemCard.remove();
-                    renumberItems();
-                }
+                event.target.closest('.card').remove();
+                renumberItems();
             }
         });
         
-        // Initial setup for pre-rendered items
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.exercise-type').forEach(select => {
                 const index = select.getAttribute('data-index');
-                updateActions(select, index); // This will also set initial field visibility
+                updateDynamicFields(select, index); 
             });
-            // Set initial item count based on rendered cards, in case it differs from Flask's {{ item_count }}
-            // Though generally they should match on initial load.
-             document.getElementById('item_count').value = itemsContainer.querySelectorAll('.card').length;
+            document.getElementById('item_count').value = itemsContainer.querySelectorAll('.card').length;
         });
     </script>
 </body>

@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>分析結果</title>
+    <title>訓練分析結果</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: #fff;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Arial', '微軟正黑體', 'Microsoft JhengHei', sans-serif;
         }
         .container {
-            max-width: 900px;
+            max-width: 1100px; /* Increased width for more columns */
             padding: 30px;
         }
         .card {
@@ -20,77 +20,147 @@
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
+            color: #333;
         }
         .table {
             color: #333;
+            font-size: 0.9rem; /* Slightly smaller font for more data */
         }
+        .table th, .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .table th:nth-child(1), .table td:nth-child(1), /* Categpry */
+        .table th:nth-child(2), .table td:nth-child(2) { /* Action */
+            text-align: left;
+        }
+
         .btn-primary {
-            background: #ff6b6b;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 24px;
-            font-weight: bold;
+            background: #ff6b6b; border: none; border-radius: 10px;
+            padding: 12px 24px; font-weight: bold;
         }
-        .btn-primary:hover {
-            background: #ff8787;
-        }
+        .btn-primary:hover { background: #ff8787; }
         h1, h3 {
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #fff;
         }
-        .alert {
-            background: #e6f3ff;
-            color: #333;
-        }
+        .card h3 { color: #1e3c72; text-shadow: none; }
+        .alert { background: #e6f3ff; color: #1e3c72; border-left: 5px solid #2a5298; }
+        .alert-ai-explanation { background: #e0f7fa; color: #00796b; border-left: 5px solid #004d40; }
+        .text-danger-custom { color: #e53935 !important; font-weight: bold; }
+        .na-value { color: #999; font-style: italic; } /* For N/A values */
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center mb-4">訓練分析報告</h1>
+        
         <div class="card p-4">
-            <h3>項目分析</h3>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>類別</th>
-                        <th>動作</th>
-                        <th>訓練量</th>
-                        <th>RPE</th>
-                        <th>建議</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in items %}
-                    <tr>
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.action }}</td>
-                        <td>
-                            {% if item.type == '有氧運動' %}
-                            {{ item.minutes }} 分鐘
-                            {% else %}
-                            {{ item.sets }} 組
-                            {% endif %}
-                        </td>
-                        <td>{{ item.rpe }}</td>
-                        <td>{{ item.suggestion }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <h3>本次訓練記錄</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>類別</th>
+                            <th>動作</th>
+                            <th>組數</th>
+                            <th>次數</th>
+                            <th>重量</th>
+                            <th>總時長(分鐘)</th>
+                            <th>RPE</th>
+                            <th>單項訓練量<br><small>(分鐘*RPE)</small></th>
+                            <th>即時建議</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items_with_details %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.action }}</td>
+                            <td>{{ item.sets if item.sets is not none else 'N/A' }}</td>
+                            <td>{{ item.reps if item.reps is not none else 'N/A' }}</td>
+                            <td>{{ item.weight if item.weight else 'N/A' }}</td>
+                            <td>{{ item.minutes if item.minutes is not none else '未填' }}</td>
+                            <td>{{ item.rpe if item.rpe is not none else '未填' }}</td>
+                            <td><b>{{ item.item_load if item.item_load is not none else 'N/A' }}</b></td>
+                            <td>{{ item.suggestion }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
+
         <div class="card p-4">
             <h3>訓練指標分析</h3>
             <div class="alert" role="alert">
-                <p><strong>總結建議：</strong> {{ metrics.analysis }}</p>
+                <p class="mb-0"><strong>總結建議：</strong> {{ metrics.analysis if metrics.analysis else "請確保輸入足夠數據以進行分析。" }}</p>
             </div>
-            <ul>
-                <li><strong>週間訓練量變化 (WWS):</strong> {{ metrics.weekly_workout_summary }} - 高於10表示肌力進步顯著，低於5建議增加訓練量</li>
-                <li><strong>運動訓練量 (TL):</strong> {{ metrics.training_load }} - 應逐週提升，代表訓練效果累積</li>
-                <li><strong>訓練同質性 (TM):</strong> {{ metrics.training_monotony }} - 0.5以下表示課表穩定，高於1.0建議增加變化</li>
-                <li><strong>訓練張力值 (TS):</strong> {{ metrics.training_strain }} - 高於100需注意過度訓練，低於50可提升訓練量</li>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>週間平均單項訓練量 (WWS):</strong> {{ metrics.weekly_workout_summary }}
+                    <small class="d-block text-muted">參考：此值基於 (分鐘*RPE)。例如，高於100表示平均單項負荷較高。</small></li>
+                <li class="list-group-item"><strong>總運動訓練量 (TL):</strong> {{ metrics.training_load }}
+                    <small class="d-block text-muted">參考：所有項目 (分鐘*RPE) 的總和。</small></li>
+                <li class="list-group-item"><strong>訓練同質性 (TM):</strong> {{ metrics.training_monotony }}
+                    <small class="d-block text-muted">參考：0.8以下通常表示課表變化適中，高於1.5建議增加變化。</small></li>
+                <li class="list-group-item"><strong>訓練張力值 (TS):</strong> {{ metrics.training_strain }}
+                     <small class="d-block text-muted">參考：TL * TM。例如，高於3000需注意恢復 (閾值因人而異)。</small></li>
             </ul>
         </div>
-        <div class="text-center">
-            <a href="/" class="btn btn-primary">回到首頁</a>
+
+        {% if ai_adjusted_schedule or (ai_explanation and "AI服務未配置" not in ai_explanation and "AI建議功能未啟用" not in ai_explanation) %}
+        <div class="card p-4">
+            <h3>AI 訓練調整建議</h3>
+            {% if ai_adjusted_schedule %}
+            <p>以下是AI根據您的訓練日誌給出的調整建議：</p>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>類別</th>
+                            <th>動作</th>
+                            <th>建議組數</th>
+                            <th>建議次數</th>
+                            <th>建議重量</th>
+                            <th>建議總時長(分鐘)</th>
+                            <th>建議RPE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for adj_item in ai_adjusted_schedule %}
+                        <tr>
+                            <td>{{ adj_item.name }}</td>
+                            <td>{{ adj_item.action }}</td>
+                            {% for key in ['adjusted_sets', 'adjusted_reps', 'adjusted_weight', 'adjusted_minutes', 'adjusted_rpe'] %}
+                            <td>
+                                {% set val = adj_item[key] %}
+                                {% if val == 'N/A' %}
+                                    <span class="na-value">{{ val }}</span>
+                                {% elif ' (原為:' in val %}
+                                    <span class="text-danger-custom">{{ val }}</span>
+                                {% else %}
+                                    {{ val }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if ai_explanation %}
+            <div class="alert alert-ai-explanation mt-3" role="alert">
+                <p class="mb-1"><strong>AI 調整原因與說明：</strong></p>
+                <p>{{ ai_explanation | replace('\n', '<br>') | safe }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-4 mb-2">
+            <a href="/" class="btn btn-primary">記錄新的訓練</a>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
