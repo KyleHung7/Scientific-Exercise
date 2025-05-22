@@ -4,6 +4,7 @@ import  google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import json
+import markdown2
 
 load_dotenv()
 
@@ -190,7 +191,7 @@ def get_ai_recommendations(workout_log_str, original_items):
                 print(f"AI schedule item is missing keys: {item}")
                 return [], "AI建議的課表項目缺少必要欄位。"
         
-        return ai_data['adjusted_schedule'], ai_data['explanation']
+        return ai_data['adjusted_schedule'], markdown2.markdown(ai_data['explanation'])
     except json.JSONDecodeError as e:
         print(f"Error decoding AI JSON: {e}\nRaw response: {response.text if 'response' in locals() else 'No response'}")
         return [], f"AI回應JSON格式錯誤: {e}"
