@@ -97,22 +97,7 @@
             </div>
         </div>
 
-        <div class="card p-4">
-            <h3>訓練指標分析</h3>
-            <div class="alert" role="alert">
-                <p class="mb-0"><strong>總結建議：</strong> {{ metrics.analysis if metrics.analysis else "請確保輸入足夠數據以進行分析。" }}</p>
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item"><strong>週間平均單項訓練量 (WWS):</strong> {{ metrics.weekly_workout_summary }}
-                    <small class="d-block text-muted">參考：此值基於 (分鐘*RPE)。例如，高於100表示平均單項負荷較高。</small></li>
-                <li class="list-group-item"><strong>總運動訓練量 (TL):</strong> {{ metrics.training_load }}
-                    <small class="d-block text-muted">參考：所有項目 (分鐘*RPE) 的總和。</small></li>
-                <li class="list-group-item"><strong>訓練同質性 (TM):</strong> {{ metrics.training_monotony }}
-                    <small class="d-block text-muted">參考：0.8以下通常表示課表變化適中，高於1.5建議增加變化。</small></li>
-                <li class="list-group-item"><strong>訓練張力值 (TS):</strong> {{ metrics.training_strain }}
-                     <small class="d-block text-muted">參考：TL * TM。例如，高於3000需注意恢復 (閾值因人而異)。</small></li>
-            </ul>
-        </div>
+        
 
         {% if ai_adjusted_schedule or (ai_explanation and "AI服務未配置" not in ai_explanation and "AI建議功能未啟用" not in ai_explanation) %}
         <div class="card p-4">
