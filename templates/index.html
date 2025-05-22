@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>運動訓練分析</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <style>
         body {
@@ -71,20 +72,54 @@
             font-weight: bold;
             color: #333;
         }
+        /* Loading overlay styles */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        #loading-logo {
+            max-width: 200px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #loading-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <img src="{{ url_for('static', filename='logo-crop.png') }}" alt="Loading" id="loading-logo">
+        <div id="loading-text">正在分析您的運動數據...</div>
+    </div>
+
     <div class="container">
         <img src="{{ url_for('static', filename='logo-crop.png') }}" alt="Logo" class="logo mx-auto d-block mb-4">
         <h1 class="text-center mb-4">科學化運動衝量分析</h1>
         {% if error %}
         <div class="alert alert-danger text-center" role="alert">{{ error }}</div>
         {% endif %}
-        <form method="POST">
+        <form id="analysis-form" method="POST">
             <input type="hidden" name="item_count" id="item_count" value="{{ item_count }}">
             <div id="items">
                 {% for i in range(1, item_count + 1) %}
-                <div class="card p-4 mb-3">
+                <div class="card p-4 mb-3" data-aos="zoom-in">
                     <button type="button" class="btn btn-danger btn-sm delete-item-btn">刪除</button>
                     <h3>項目 {{ i }}</h3>
                     <div class="row">
@@ -158,7 +193,10 @@
         {{ exercises | tojson | safe }}
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
+        AOS.init({ duration: 1000, once: true });
+
         let exerciseData = {};
         try {
             const rawData = document.getElementById('exercise-data').textContent;
@@ -169,6 +207,8 @@
         }
 
         const itemsContainer = document.getElementById('items');
+        const analysisForm = document.getElementById('analysis-form');
+        const loadingOverlay = document.getElementById('loading-overlay');
 
         function updateDynamicFields(selectElement, itemIndex) {
             const actionSelect = document.getElementById(`action${itemIndex}`);
@@ -320,6 +360,11 @@
                 updateDynamicFields(select, index); 
             });
             document.getElementById('item_count').value = itemsContainer.querySelectorAll('.card').length;
+
+            // Add form submission event listener
+            analysisForm.addEventListener('submit', function(event) {
+                loadingOverlay.style.display = 'flex';
+            });
         });
     </script>
 </body>
