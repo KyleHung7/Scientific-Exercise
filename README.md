@@ -2,9 +2,11 @@
 
 **Members** [@KyleHung7](https://github.com/KyleHung7) [@samko5sam](https://github.com/samko5sam) [@leokao960811](https://github.com/leokao960811) 
 
-**Final Project Proposal Video** [https://youtu.be/v52GLI_23dg](https://youtu.be/v52GLI_23dg)
+**Initial Project Proposal Video** [https://youtu.be/v52GLI_23dg](https://youtu.be/v52GLI_23dg)
 
-**Final Project Progress Report Video** [https://youtu.be/-LkDwBUUt44](https://youtu.be/-LkDwBUUt44)
+**Project Progress Report Video** [https://youtu.be/-LkDwBUUt44](https://youtu.be/-LkDwBUUt44)
+
+**Final Project Proposal Video** [https://www.youtube.com/watch?v=2MnXMdxQhkc](https://www.youtube.com/watch?v=2MnXMdxQhkc)
 
 
 ## Project Introduction
