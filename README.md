@@ -6,6 +6,7 @@
 
 **Project Progress Report Video** [https://youtu.be/-LkDwBUUt44](https://youtu.be/-LkDwBUUt44)
 
+---
 **Final Project Proposal Video** [https://www.youtube.com/watch?v=2MnXMdxQhkc](https://www.youtube.com/watch?v=2MnXMdxQhkc)
 
 
